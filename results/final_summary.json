@@ -1,0 +1,10 @@
+{
+  "simple_average": -0.0022,
+  "weighted_average": 0.0268,
+  "num_professions": 32,
+  "num_female_leaning": 21,
+  "num_male_leaning": 11,
+  "gender_direction_pca_gap": 0.134,
+  "corpus_articles": 187772,
+  "corpus_size_gb": 1.2
+}

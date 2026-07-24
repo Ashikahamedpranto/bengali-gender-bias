@@ -1,0 +1,182 @@
+\documentclass[11pt]{article}
+
+% Change "review" to "final" for camera-ready. Keep "review" for anonymized submission.
+\usepackage[review]{acl}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+
+\usepackage{fontspec}
+\newfontfamily\bengalifont{Noto Sans Bengali}
+\newcommand{\bn}[1]{{\bengalifont #1}}
+
+\title{Extending Gender Bias Measurement in Wikipedia Corpora to Bengali}
+
+\author{Anonymous ACL submission}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Prior work has measured gender bias in Wikipedia corpora across nine languages (Chinese, Spanish, English, Arabic, German, French, Farsi, Urdu, and Wolof), extending Bolukbasi et al.'s word-embedding-based bias metric beyond English for the first time (Chen et al., 2021). Although Bengali is one of the ten most-spoken languages in the world, seventh by total speakers according to Ethnologue (Eberhard et al., 2026), it was excluded from this study and, to our knowledge, from closely related work on NLP toolchain underrepresentation. We extend this methodology to Bengali, translating and validating the original defining set and profession set, training a Word2Vec model on the full Bengali Wikipedia corpus, and computing profession-level and corpus-level gender bias scores. We find that Bengali's overall corpus-level bias is nearly neutral under a simple average (-0.002) but shifts to mildly female-leaning under a frequency-weighted average (+0.027), a pattern previously observed only in Spanish among the nine originally studied languages. We also document several Bengali-specific translation challenges, including borrowed-versus-native word pairs and profession words with gendered forms, extending the taxonomy of cross-linguistic translation issues identified in the original study.
+\end{abstract}
+
+\section{Introduction}
+
+Natural Language Processing (NLP) systems increasingly shape critical decisions, from resume screening to content moderation, yet they systematically underrepresent the majority of human languages \citep{wali2020machine,chen2021gender}. \citet{chen2021gender} extended \citet{bolukbasi2016man}'s method for measuring gender bias in word embeddings, originally designed for English, to eight additional languages, including several with grammatically gendered nouns (Spanish, Arabic, German, French, Urdu). Their work revealed that despite substantial investment in multilingual NLP support, the modern NLP pipeline still dramatically underrepresents most of the world's approximately 7,000 languages.
+
+Despite being among the ten most-spoken languages in the world, seventh by total speakers according to Ethnologue \citep{eberhard2026ethnologue}, Bengali was absent from this 9-language study and remains, to our knowledge, unstudied in this specific line of gender-bias research. Bengali also presents linguistically distinct challenges: unlike the five grammatically gendered languages in the original study, Bengali largely lacks grammatical gender but retains a small set of profession words with vestigial gendered forms and shows frequent borrowing of English profession terms alongside native equivalents.
+
+This paper extends \citet{chen2021gender}'s methodology to Bengali, contributing the following:
+
+\begin{enumerate}
+    \item Translate and validate the 7-pair defining set and 32-word profession set into Bengali, documenting translation ambiguities specific to Bengali.
+    \item Build a Bengali Wikipedia corpus (187,772 articles, 1.2GB of cleaned text) and train a Word2Vec model on it.
+    \item Compute the gender direction via PCA and calculate DirectBias scores for all 32 profession words, using frequency-weighted averages for words with multiple forms.
+    \item Compare our results to the original 9-language study, finding that Bengali's corpus-level bias direction flips between simple and weighted averaging, a pattern previously seen only in Spanish.
+\end{enumerate}
+
+\section{Related Work}
+
+\citet{bolukbasi2016man} introduced a method for quantifying gender bias in word embeddings using gendered word pairs (e.g., ``he''/``she'') to define a gender direction, against which profession words could be measured. \citet{wali2020machine} documented substantial gaps in NLP toolchain support across 8 languages, including differences in Wikipedia corpus size and quality even after adjusting for speaker population. \citet{chen2021gender} built on this work, extending \citet{bolukbasi2016man}'s bias metric to nine languages and developing techniques to handle profession words with grammatically gendered forms. \citet{joshi2020state} similarly documented disparities in which languages receive attention at NLP research conferences, finding that low-resource languages remain persistently underserved even as multilingual NLP investment grows. Despite Bengali's substantial speaker population, it has received comparatively little attention in this specific line of research; our work extends it to Bengali, part of the Eastern Indo-Aryan language family, not previously studied in this context.
+
+\section{Methodology}
+
+\subsection{Defining Set and Profession Set}
+
+This work began with \citet{chen2021gender}'s final 7-pair defining set (woman-man, daughter-son, mother-father, girl-boy, queen-king, wife-husband, madam-sir) and 32-word profession set, translating both into Bengali. Translation surfaced several Bengali-specific ambiguities:
+
+\textbf{Overlapping everyday terms:} The common words for ``girl'' and ``daughter'' (\bn{মেয়ে}) and ``boy'' and ``son'' (\bn{ছেলে}) overlap in everyday Bengali. This research adopted the more formal, distinct terms \bn{কন্যা/পুত্র} for daughter/son to preserve the intended contrast with girl/boy, following the original paper's practice of resolving similar ambiguities (e.g., their removal of the ``gal-guy'' pair).
+
+\textbf{Borrowed versus native profession terms:} Consistent with \citet{chen2021gender}'s finding that Urdu and Wolof speakers frequently use borrowed English profession terms, the same pattern appears in Bengali for seven professions (engineer, manager, driver, chef, governor, worker, person), each having both a commonly-used English-derived form and a native Bengali form.
+
+\textbf{Vestigial grammatical gender:} While Bengali largely lacks grammatical gender, five profession words retain distinct masculine and feminine forms: teacher (\bn{শিক্ষক/শিক্ষিকা}), actor (\bn{অভিনেতা/অভিনেত্রী}), writer (\bn{লেখক/লেখিকা}), nurse (\bn{নার্স/সেবিকা}, the latter carrying an inherently female connotation), and student, which has three forms (masculine, feminine, and neutral: \bn{ছাত্র/ছাত্রী/শিক্ষার্থী}).
+
+\textbf{Multi-word phrases:} Two profession words are two-word phrases in Bengali (filmmaker: \bn{চলচ্চিত্র নির্মাতা}; comedian: \bn{কৌতুক অভিনেতা/অভিনেত্রী}), mirroring the tokenization challenge \citet{chen2021gender} documented for Arabic's word for ``astronomer.''
+
+\subsection{Corpus Construction}
+
+The Bengali Wikipedia dump (July 2026) was downloaded and processed into clean article text using WikiExtractor, resolving two Python 3.12 regular expression compatibility issues in the extraction library along the way. After removing empty redirect and stub pages, the final corpus contained 187,772 articles (1.2GB, 1,791,600 sentences).
+
+\subsection{Model Training and Bias Calculation}
+
+A Word2Vec model (skip-gram, vector size 300, window 5, minimum count 5) was trained on the full corpus. Following \citet{chen2021gender}, the gender direction was computed by calculating the vector difference for each of the 7 defining pairs, then applying PCA to extract the first principal component. DirectBias \citep{bolukbasi2016man} was then computed for each profession word using cosine similarity between the word's vector and the gender direction.
+
+For profession words with multiple forms (borrowed/native or gendered), each form's bias score was computed individually, then combined using a frequency-weighted average based on each form's occurrence count in the corpus, following \citet{chen2021gender}'s approach for German's ``scientist'' (Wissenschaftler/Wissenschaftlerin), where a simple average was shown to overestimate bias relative to actual usage patterns.
+
+For the two multi-word phrases, a phrase-level vector was approximated by averaging the vectors of its component words, then the same weighting procedure was applied.
+
+\section{Results}
+
+\subsection{Gender Direction Reliability}
+
+The gap between the first and second principal components of our defining set was 0.134, indicating a moderately reliable gender direction, stronger than \citet{chen2021gender}'s Chinese result (0.06, considered unreliable) and Arabic (0.11), but weaker than English (0.29), Urdu (0.28), and Spanish (0.50). We interpret this as reflecting Bengali's largely non-gendered grammar: unlike grammatically gendered languages where defining pairs strongly align on a single axis, Bengali's defining pairs show somewhat more variation, potentially reflecting non-gender semantic content (e.g., ``royalty'' in queen-king) not fully cancelled out.
+
+\subsection{Profession-Level Bias}
+
+Of 32 profession words, 21 showed a female-leaning bias and 11 showed a male-leaning bias. The strongest male-leaning professions were governor (-0.141), analyst (-0.134), adventurer (-0.130), and scientist (-0.127); the strongest female-leaning were musician (+0.095), comedian (+0.095), filmmaker (+0.091), and actor (+0.091). Full results are shown in Table~\ref{tab:bias-ranking} (Appendix~\ref{sec:appendix-a}).
+
+\subsection{Corpus-Level Bias}
+
+The simple (unweighted) average across all 32 profession words was -0.002, essentially neutral. The frequency-weighted average was +0.027, a mild female lean. This divergence occurs because the strongest male-leaning professions (e.g., governor, analyst) occur relatively infrequently in the corpus, while several frequently-occurring professions (e.g., person, actor) lean female, giving them outsized influence on the weighted average. This mirrors the pattern \citet{chen2021gender} observed in Spanish, the only one of their nine languages where simple and weighted averages diverged in direction; to our knowledge, Bengali is the second documented instance of this effect.
+
+\section{Discussion}
+
+Our results suggest that Bengali's aggregate gender bias in Wikipedia text is comparatively mild relative to several of the nine originally studied languages, most of which showed a clear male-leaning corpus-level bias. We caution, however, that this should not be read as evidence that Bengali NLP is less biased in a broader sense: our moderate PCA reliability gap (0.134) indicates some uncertainty in the gender direction itself, and our corpus, while substantial, reflects Wikipedia's specific register and contributor demographics rather than Bengali usage broadly.
+
+The vestigial gendered profession forms identified (e.g., \bn{সেবিকা} for ``nurse,'' carrying an inherently female connotation despite the availability of the neutral borrowed term \bn{নার্স}) suggest that lexical-level gender associations may persist in Bengali independent of grammatical gender marking, a distinction not captured by treating languages as simply ``grammatically gendered'' or not.
+
+\section{Future Work}
+
+As a next step, we plan to train the same model using Bengali newspaper articles and literary texts, in addition to Wikipedia, to see whether the gender bias patterns differ across these different types of writing. We also plan to compare our Word2Vec-based results against contextual embeddings from multilingual (mBERT, XLM-R) and Bengali-specific (BanglaBERT, BanglishBERT) transformer models, to assess whether bias patterns identified in 2020-era static embeddings persist in more recent architectures. Finally, we plan to extend our translated word lists to Hindi, enabling broader South Asian language coverage in this line of research.
+
+\section{Conclusion}
+
+We extend a well-established gender bias measurement methodology to Bengali for the first time, filling a gap in a research area that had previously covered no South Asian language besides Urdu. We find a distinctive pattern in which Bengali's corpus-level gender bias shifts from neutral to mildly female-leaning depending on whether profession-level scores are averaged simply or weighted by frequency, a pattern previously documented only in Spanish. Our translation process further surfaced Bengali-specific challenges around borrowed vocabulary and vestigial gendered profession terms, extending the taxonomy of cross-linguistic NLP bias measurement challenges.
+
+\section*{Limitations}
+
+Our corpus reflects Wikipedia's specific register and contributor demographics rather than Bengali usage broadly. Our PCA reliability gap (0.134) indicates moderate, not strong, confidence in the extracted gender direction. We have not yet validated our translation choices with a second native Bengali speaker, nor compared results against contextual embedding models; both are planned as immediate next steps.
+
+\bibliography{custom}
+
+\appendix
+
+\section{Full Profession Bias Ranking (32 words)}
+\label{sec:appendix-a}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrl}
+\hline
+\textbf{Profession} & \textbf{Bias} & \textbf{Dir.} \\
+\hline
+governor & -0.1408 & M \\
+analyst & -0.1338 & M \\
+adventurer & -0.1296 & M \\
+scientist & -0.1271 & M \\
+biologist & -0.1029 & M \\
+banker & -0.0565 & M \\
+astronomer & -0.0499 & M \\
+engineer & -0.0494 & M \\
+soldier & -0.0461 & M \\
+athlete & -0.0440 & M \\
+student & -0.0206 & M \\
+manager & -0.0165 & M \\
+inventor & -0.0141 & M \\
+judge & -0.0091 & M \\
+ambassador & -0.0043 & M \\
+astronaut & +0.0020 & F \\
+aide & +0.0044 & F \\
+journalist & +0.0160 & F \\
+nurse & +0.0168 & F \\
+writer & +0.0171 & F \\
+teacher & +0.0197 & F \\
+farmer & +0.0326 & F \\
+worker & +0.0399 & F \\
+lawyer & +0.0449 & F \\
+driver & +0.0650 & F \\
+artist & +0.0777 & F \\
+chef & +0.0803 & F \\
+person & +0.0844 & F \\
+actor & +0.0912 & F \\
+filmmaker & +0.0913 & F \\
+comedian & +0.0946 & F \\
+musician & +0.0954 & F \\
+\hline
+\end{tabular}
+\caption{Full DirectBias ranking across all 32 profession words, sorted from most male-leaning (M) to most female-leaning (F).}
+\label{tab:bias-ranking}
+\end{table}
+
+\section{Defining Set Translations}
+\label{sec:appendix-b}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{ll}
+\hline
+\textbf{English} & \textbf{Bengali} \\
+\hline
+woman - man & \bn{নারী - পুরুষ} \\
+daughter - son & \bn{কন্যা - পুত্র} \\
+mother - father & \bn{মা - বাবা} \\
+girl - boy & \bn{মেয়ে - ছেলে} \\
+queen - king & \bn{রানী - রাজা} \\
+wife - husband & \bn{স্ত্রী - স্বামী} \\
+madam - sir & \bn{ম্যাডাম - স্যার} \\
+\hline
+\end{tabular}
+\caption{Final defining set (7 pairs) translated into Bengali.}
+\label{tab:defining-set}
+\end{table}
+
+\end{document}
