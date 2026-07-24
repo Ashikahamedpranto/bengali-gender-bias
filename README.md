@@ -91,30 +91,7 @@ wikiextractor
 
 Full results for all 32 professions are in `results/bias_scores.json` and Appendix A of the paper.
 
-## Citation
 
-If you use this work, please cite:
-
-```bibtex
-@misc{ahamed2026bengali,
-  title={Extending Gender Bias Measurement in Wikipedia Corpora to Bengali},
-  author={Ahamed, Ashik and Matthews, Jeanna},
-  year={2026},
-  note={Submitted to WiNLP 2026}
-}
-```
-
-And the original methodology paper this work extends:
-
-```bibtex
-@inproceedings{chen2021gender,
-  title={Gender bias and under-representation in natural language processing across human languages},
-  author={Chen, Yan and Mahoney, Christopher and Grasso, Isabella and Wali, Esma and Matthews, Abigail and Middleton, Thomas and Njie, Mariama and Matthews, Jeanna},
-  booktitle={Proceedings of the 2021 AAAI/ACM Conference on AI, Ethics, and Society},
-  pages={24--34},
-  year={2021}
-}
-```
 
 ## Future Work
 
