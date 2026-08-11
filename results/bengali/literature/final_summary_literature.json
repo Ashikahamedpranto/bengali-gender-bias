@@ -1,0 +1,17 @@
+{
+  "corpus": "Bengali Literature (Wikisource)",
+  "corpus_size": "267 MB",
+  "pages": 96365,
+  "sentences": 739073,
+  "professions_measured": 22,
+  "professions_missing": 10,
+  "missing_professions": ["athlete", "judge", "astronomer", "aide", "biologist", "analyst", "adventurer", "astronaut", "comedian", "farmer"],
+  "pca_reliability_gap": 0.049,
+  "reliability_flag": "unreliable - below Chen et al. (2021) Chinese benchmark of 0.06",
+  "simple_average": -0.1193,
+  "weighted_average": null,
+  "weighted_average_note": "not computed - gender direction reliability too low to support meaningful weighting",
+  "male_leaning_count": 21,
+  "female_leaning_count": 1,
+  "note": "Near-total directional uniformity (21/22 male-leaning) interpreted as a breakdown of the DirectBias methodology on archaic/poetic Bengali register, not a genuine bias finding. See paper Section 4.3 and 5."
+}
