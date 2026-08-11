@@ -1,0 +1,19 @@
+{
+  "corpus": "Bengali Newspaper (Prothom Alo)",
+  "corpus_size": "4.6 GB",
+  "articles": 949036,
+  "date_range": "July 2009 - March 2021",
+  "sentences": null,
+  "sentences_note": "not explicitly logged due to incremental chunked training",
+  "vocabulary_size": 296443,
+  "professions_measured": 32,
+  "professions_missing": 0,
+  "pca_reliability_gap": 0.101,
+  "reliability_flag": "moderate - between Wikipedia (0.134) and Literature (0.049)",
+  "simple_average": -0.0139,
+  "weighted_average": -0.0427,
+  "direction_stable": true,
+  "male_leaning_count": 16,
+  "female_leaning_count": 16,
+  "note": "Direction does not flip between simple and weighted averaging, unlike Wikipedia. Balanced 16/16 split supports reliability of this corpus's results."
+}
