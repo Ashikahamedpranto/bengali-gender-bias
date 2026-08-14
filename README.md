@@ -153,6 +153,8 @@ Limitations section for full details.
 
 ## Acknowledgments
 
-This work extends the methodology of Chen et al. (2021) and builds on the broader
-line of research by Wali et al. (2020) on NLP toolchain underrepresentation, and
-Chaloner & Maldonado (2019) on cross-domain gender bias measurement in English.
+This work builds on the original gender bias measurement methodology introduced by
+Bolukbasi et al. (2016), extends the multilingual methodology of Chen et al. (2021),
+and builds on the broader line of research by Wali et al. (2020) on NLP toolchain
+underrepresentation across languages, and Chaloner & Maldonado (2019) on cross-domain
+gender bias measurement in English.
